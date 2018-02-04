@@ -20,8 +20,8 @@
 
 <body>
     <div class="container">
-        <h5 class="hash-heading">BTCTürk Coin Değerleri</h5>
-        <div class="row">
+        <h5 class="hash-heading">BTCTurk Coin Values</h5>
+        <div class="row" id="btcturkValues">
             <div class="col-sm-6">
                 <label>Ethereum/TRY</label>
                 <pre id="ethereum"></pre>
@@ -29,38 +29,53 @@
             <div class="col-sm-6">
                 <label>Bitcoin/TRY</label>
                 <pre id="bitcoin">
-                </div>
             </div>
-        
+        </div>
             <!-- Input row -->
             <h5 class="hash-heading">Bitfinex</h5>
-            <div class="row">
-                    <div class="form-group col-sm-4" id="bitfinex">
-                        <label>Private Key</label>
-                        <input type="text" class="form-control" id="privateKey">
+            <div class="row" id="bitfinexKeyDiv">
+                    <div class="form-group col-sm-4">
+                        <label>Bitfinex Private Key</label>
+                        <input type="text" class="form-control" id="bitfinexPrivateKey">
                     </div>
                     <div class="form-group col-sm-4">
-                        <label>Public Key</label>
-                        <input type="text" class="form-control" id="publicKey">
-                    </div>
-                    <div class="form-group col-sm-4">
-                            <label>Connect</label>
-                        <button type="button" class="btn btn-primary form-control" id="convertBtn">
-                                <span class="glyphicon glyphicon-transfer"></span>
-                                Connect
-                            </button>
+                        <label>Bitfinex Public Key</label>
+                        <input type="text" class="form-control" id="bitfinexPublicKey">
                     </div>
             </div>
+            <h5 class="hash-heading">Kucoin</h5>
+            <div class="row" id="kucoinKeyDiv">
+                    <div class="form-group col-sm-4">
+                        <label>Kucoin Private Key</label>
+                        <input type="text" class="form-control" id="kucoinPrivateKey">
+                    </div>
+                    <div class="form-group col-sm-4">
+                        <label>Kucoin Public Key</label>
+                        <input type="text" class="form-control" id="kucoinPublicKey">
+                    </div>
+            </div>
+            
+            <div class="row">
+                <button type="button" class="btn btn-primary form-control" id="convertBtn">
+                    <span class="glyphicon glyphicon-transfer"></span>
+                        Connect
+                </button>
+            </div>
         
-            <h5 class="hash-heading">Account Informations</h5>
+            <h5 class="hash-heading">Bitfinex Wallet Balances</h5>
             <!-- SHA-512 row -->
             <div id="bitfinexAccount">
             </div>
             
-            <h5 class="hash-heading">Conversions</h2>
+            <h5 class="hash-heading">Bitfinex/BTCTurk Values</h2>
             <div id="bitfinexOutputDiv">
-              
             </div>
+            <h5 class="hash-heading">Kucoin Wallet Balances</h5>
+            <!-- SHA-512 row -->
+            <div id="kucoinAccount">
+            </div>
+            <h5 class="hash-heading">Kucoin/BTCTurk Values</h2>
+            <div id="kucoinOutputDiv">
           </div>
         
           </div>

@@ -1,58 +1,28 @@
+var file = require('fs');
 var ccxt = require('ccxt')
 var btcturk = new ccxt.btcturk();
 var bitfinex = new ccxt.bitfinex();
 var binance = new ccxt.binance();
+var kucoin = new ccxt.kucoin();
 
-var bitfinexProps = {
-    ethereumWithdrawalFee: 0.01,
-    bitcoinWithdrawlFee: 0.0008
-};
 
+var taxFeeDict = {};
 var btcTurkProps = {};
 
 
 $(() => {
-    //load btc latest values
-    var btcturk = new ccxt.btcturk();
-    btcturk.fetchTickers().then(response => {
-        btcTurkProps.bitcoinTry = response["BTC/TRY"].last;
-        btcTurkProps.ethereumTry = response["ETH/TRY"].last;
-
-        $('#bitcoin').text(btcTurkProps.bitcoinTry)
-        $('#ethereum').text(btcTurkProps.ethereumTry)
-    })
-
+    readTaxFeeList();
+    getBtcTurkValues();
 
     $("#convertBtn").bind("click", function () {
-        bitfinex.apiKey = document.getElementById('publicKey').value;
-        bitfinex.secret = document.getElementById('privateKey').value;
+        bitfinex.apiKey = document.getElementById('bitfinexPublicKey').value;
+        bitfinex.secret = document.getElementById('bitfinexPrivateKey').value;
+        kucoin.apiKey = document.getElementById('kucoinPublicKey').value;
+        kucoin.secret = document.getElementById('kucoinPrivateKey').value;
         bitfinex.loadMarkets();
-        bitfinex.fetchBalance().then(response => {
-            //coins in the balance are added to div
-            for (var i = 0; i < response.info.length; i++) {
-                if (response.info[i].amount > 0)
-                    addLabelAndInput(response.info[i].currency.toUpperCase(), "bitfinexAccount", response.info[i].amount);
-            }
-            for (var i = 0; i < response.info.length; i++) {
-                debugger;
-                if (response.info[i].amount != 0 && response.info[i].currency != "USD") {
-                    var currencyCode = bitfinex.commonCurrencyCode(response.info[i].currency.toUpperCase());
-                    if (currencyCode != "BTC") {
-                        convertToBitcoinBtcTurk(currencyCode, response.info[i].amount, 0.01).then(
-                            (resultObject) => {
-                                addLabelAndInput(resultObject.symbol, "bitfinexOutputDiv", resultObject.value);
-                            }
-                        );
-                        convertToEthereumForBtcTurk(currencyCode, response.info[i].amount, 0.01).then(
-                            (resultObject) => {
-                                addLabelAndInput(resultObject.symbol, "bitfinexOutputDiv", resultObject.value);
-                            }
-                        );
-                    }
-                }
-            }
-        })
-
+        convertBitfinexCoins();
+        kucoin.loadMarkets();
+        convertKucoinCoins();
     });
 });
 
@@ -76,12 +46,84 @@ var addLabelAndInput = function (labelText, div, value) {
     accountDiv.appendChild(element);
 }
 
-function convertToEthereumForBtcTurk(ticker, amount, commission) {
+var getBtcTurkValues = function () {
+    //load btc latest values
+    btcturk.fetchTickers().then(response => {
+        btcTurkProps.bitcoinTry = response["BTC/TRY"].last;
+        btcTurkProps.ethereumTry = response["ETH/TRY"].last;
+
+        $('#bitcoin').text(btcTurkProps.bitcoinTry)
+        $('#ethereum').text(btcTurkProps.ethereumTry)
+    });
+}
+
+var convertBitfinexCoins = function () {
+    bitfinex.fetchBalance().then(response => {
+        //coins in the bitfinex balance are added to div
+        for (var i = 0; i < response.info.length; i++) {
+            if (response.info[i].amount > 0)
+                addLabelAndInput(response.info[i].currency.toUpperCase(), "bitfinexAccount", response.info[i].amount);
+        }
+        for (var i = 0; i < response.info.length; i++) {
+            if (response.info[i].amount != 0 && response.info[i].currency != "USD") {
+                var currencyCode = bitfinex.commonCurrencyCode(response.info[i].currency.toUpperCase());
+                if (currencyCode != "ETH") {
+                    convertEthereumtoBtcturk(bitfinex, currencyCode, response.info[i].amount, "bitfinex").then(
+                        (resultObject) => {
+                            addLabelAndInput(resultObject.symbol, "bitfinexOutputDiv", resultObject.value);
+                        }
+                    );
+                }
+                if (currencyCode != "BTC") {
+                    convertBitcointoBtcturk(bitfinex, currencyCode, response.info[i].amount, "bitfinex").then(
+                        (resultObject) => {
+                            addLabelAndInput(resultObject.symbol, "bitfinexOutputDiv", resultObject.value);
+                        }
+                    );
+                }
+            }
+        }
+    });
+}
+
+var convertKucoinCoins = function () {
+    kucoin.fetchBalance().then(response => {
+        for (var i = 0; i < response.info.length; i++) {
+            var currencyCode = response.info[i].coinType;
+            if (response.info[i].balance > 0)
+                addLabelAndInput(currencyCode.toUpperCase(), "kucoinAccount", response.info[i].balance);
+        }
+        for (var i = 0; i < response.info.length; i++) {
+            var currencyCode = response.info[i].coinType;
+            if (response.info[i].balance != 0 && currencyCode != "USD") {
+                if (currencyCode != "ETH") {
+                    convertEthereumtoBtcturk(kucoin, currencyCode, response.info[i].balance, "kucoin").then(
+                        (resultObject) => {
+                            if (resultObject.value > 0)
+                                addLabelAndInput(resultObject.symbol, "kucoinOutputDiv", resultObject.value);
+                        }
+                    );
+                }
+                if (currencyCode != "BTC") {
+                    convertBitcointoBtcturk(kucoin, currencyCode, response.info[i].balance, "kucoin").then(
+                        (resultObject) => {
+                            if (resultObject.value > 0)
+                                addLabelAndInput(resultObject.symbol, "kucoinOutputDiv", resultObject.value);
+                        }
+                    );
+                }
+            }
+        }
+    });
+}
+
+function convertEthereumtoBtcturk(marketApi, ticker, amount, market) {
     return new Promise((resolve, reject) => {
-        bitfinex.fetchTicker(ticker + "/ETH").then(
+        marketApi.fetchTicker(ticker + "/ETH").then(
             response => {
+                var amountAfterTaxes = amount - taxFeeDict[market + "_eth"];
                 var priceByEth = response.last;
-                var totalCoin = amount * priceByEth;
+                var totalCoin = amountAfterTaxes * priceByEth;
                 totalBtcTurkValue = totalCoin * (btcTurkProps.ethereumTry)
                 var resultObject = {
                     value: totalBtcTurkValue,
@@ -95,12 +137,13 @@ function convertToEthereumForBtcTurk(ticker, amount, commission) {
     });
 }
 
-function convertToBitcoinBtcTurk(ticker, amount, commission) {
+function convertBitcointoBtcturk(marketApi, ticker, amount, market) {
     return new Promise((resolve, reject) => {
-        bitfinex.fetchTicker(ticker + "/BTC").then(
+        marketApi.fetchTicker(ticker + "/BTC").then(
             response => {
+                var amountAfterTaxes = amount - taxFeeDict[market + "_btc"];
                 var priceByBtc = response.last;
-                var totalCoin = amount * priceByBtc;
+                var totalCoin = amountAfterTaxes * priceByBtc;
                 totalBtcTurkValue = totalCoin * (btcTurkProps.bitcoinTry);
                 var resultObject = {
                     value: totalBtcTurkValue,
@@ -112,4 +155,13 @@ function convertToBitcoinBtcTurk(ticker, amount, commission) {
             reject(error);
         });
     });
+}
+
+var readTaxFeeList = function () {
+    file.readFileSync('TaxFeeList.txt').toString().split('\n').forEach(
+        function (line) {
+            var keyValuePair = line.split(':');
+            taxFeeDict[keyValuePair[0]] = keyValuePair[1];
+        }
+    )
 }

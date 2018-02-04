@@ -1,0 +1,16 @@
+{
+  "name": "cryptocoin",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "electron app.js"
+
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ccxt": "^1.10.397",
+    "electron": "^1.7.9"
+  }
+}

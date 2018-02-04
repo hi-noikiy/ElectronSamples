@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+
+    <title>Hash</title>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+    <!-- Scripts -->
+    <script>
+        delete module.exports
+    </script>
+    <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
+    <script src="./window.js" charset="utf-8"></script>
+
+</head>
+
+<body>
+    <div class="container">
+        <h5 class="hash-heading">BTCTürk Coin Değerleri</h5>
+        <div class="row">
+            <div class="col-sm-6">
+                <label>Ethereum/TRY</label>
+                <pre id="ethereum"></pre>
+            </div>
+            <div class="col-sm-6">
+                <label>Bitcoin/TRY</label>
+                <pre id="bitcoin">
+                </div>
+            </div>
+        
+            <!-- Input row -->
+            <h5 class="hash-heading">Bitfinex</h5>
+            <div class="row">
+                    <div class="form-group col-sm-4" id="bitfinex">
+                        <label>Private Key</label>
+                        <input type="text" class="form-control" id="privateKey">
+                    </div>
+                    <div class="form-group col-sm-4">
+                        <label>Public Key</label>
+                        <input type="text" class="form-control" id="publicKey">
+                    </div>
+                    <div class="form-group col-sm-4">
+                            <label>Connect</label>
+                        <button type="button" class="btn btn-primary form-control" id="convertBtn">
+                                <span class="glyphicon glyphicon-transfer"></span>
+                                Connect
+                            </button>
+                    </div>
+            </div>
+        
+            <h5 class="hash-heading">Account Informations</h5>
+            <!-- SHA-512 row -->
+            <div id="bitfinexAccount">
+            </div>
+            
+            <h5 class="hash-heading">Conversions</h2>
+            <div id="bitfinexOutputDiv">
+              
+            </div>
+          </div>
+        
+          </div>
+    </div>
+    
+</body>
+
+</html>

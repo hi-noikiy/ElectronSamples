@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
@@ -34,50 +34,75 @@
             <!-- Input row -->
             <h5 class="hash-heading">Bitfinex</h5>
             <div class="row" id="bitfinexKeyDiv">
-                    <div class="form-group col-sm-4">
+                    <div class="form-group col-sm-6">
                         <label>Bitfinex Private Key</label>
                         <input type="text" class="form-control" id="bitfinexPrivateKey">
                     </div>
-                    <div class="form-group col-sm-4">
+                    <div class="form-group col-sm-6">
                         <label>Bitfinex Public Key</label>
                         <input type="text" class="form-control" id="bitfinexPublicKey">
                     </div>
             </div>
+            <h5 class="hash-heading">Bitfinex Wallet Balances</h5>
+            <div id="bitfinexAccount">
+            </div>
+            <h5 class="hash-heading">Bitfinex/BTCTurk Values</h2>
+            <div id="bitfinexOutputDiv">
+            </div>
+            <div class="row">
+                <button type="button" class="btn" id="connectBitfinex">
+                    <span class="glyphicon glyphicon-transfer"></span>
+                        Connect to Bitfinex
+                </button>
+            </div>
+
             <h5 class="hash-heading">Kucoin</h5>
             <div class="row" id="kucoinKeyDiv">
-                    <div class="form-group col-sm-4">
+                    <div class="form-group col-sm-6">
                         <label>Kucoin Private Key</label>
                         <input type="text" class="form-control" id="kucoinPrivateKey">
                     </div>
-                    <div class="form-group col-sm-4">
+                    <div class="form-group col-sm-6">
                         <label>Kucoin Public Key</label>
                         <input type="text" class="form-control" id="kucoinPublicKey">
                     </div>
             </div>
-            
-            <div class="row">
-                <button type="button" class="btn btn-primary form-control" id="convertBtn">
-                    <span class="glyphicon glyphicon-transfer"></span>
-                        Connect
-                </button>
-            </div>
-        
-            <h5 class="hash-heading">Bitfinex Wallet Balances</h5>
-            <!-- SHA-512 row -->
-            <div id="bitfinexAccount">
-            </div>
-            
-            <h5 class="hash-heading">Bitfinex/BTCTurk Values</h2>
-            <div id="bitfinexOutputDiv">
-            </div>
             <h5 class="hash-heading">Kucoin Wallet Balances</h5>
-            <!-- SHA-512 row -->
             <div id="kucoinAccount">
             </div>
             <h5 class="hash-heading">Kucoin/BTCTurk Values</h2>
             <div id="kucoinOutputDiv">
-          </div>
-        
+            </div>
+            <div class="row">
+                <button type="button" class="btn" id="connectKucoin">
+                    <span class="glyphicon glyphicon-transfer"></span>
+                        Connect to Kucoin
+                </button>
+            </div>
+
+            <h5 class="hash-heading">Binance</h5>
+            <div class="row" id="binanceKeyDiv">
+                    <div class="form-group col-sm-6">
+                        <label>Binance Private Key</label>
+                        <input type="text" class="form-control" id="binancePrivateKey">
+                    </div>
+                    <div class="form-group col-sm-6">
+                        <label>Binance Public Key</label>
+                        <input type="text" class="form-control" id="binancePublicKey">
+                    </div>
+            </div>
+            <h5 class="hash-heading">Binance Wallet Balances</h5>
+            <div id="binanceAccount">
+            </div>
+            <h5 class="hash-heading">Binance/BTCTurk Values</h2>
+            <div id="binanceOutputDiv">
+            </div>
+            <div class="row">
+                <button type="button" class="btn" id="connectBinance">
+                    <span class="glyphicon glyphicon-transfer"></span>
+                        Connect to Binance
+                </button>
+            </div>
           </div>
     </div>
     

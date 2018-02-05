@@ -14,36 +14,42 @@ $(() => {
     readTaxFeeList();
     getBtcTurkValues();
 
-    $("#convertBtn").bind("click", function () {
+    $("#connectBitfinex").bind("click", function () {
         bitfinex.apiKey = document.getElementById('bitfinexPublicKey').value;
         bitfinex.secret = document.getElementById('bitfinexPrivateKey').value;
-        kucoin.apiKey = document.getElementById('kucoinPublicKey').value;
-        kucoin.secret = document.getElementById('kucoinPrivateKey').value;
         bitfinex.loadMarkets();
         convertBitfinexCoins();
+    });
+    $("#connectKucoin").bind("click", function () {
+        kucoin.apiKey = document.getElementById('kucoinPublicKey').value;
+        kucoin.secret = document.getElementById('kucoinPrivateKey').value;
         kucoin.loadMarkets();
         convertKucoinCoins();
+    });
+    $("#connectBinance").bind("click", function () {
+        binance.apiKey = document.getElementById('binancePublicKey').value;
+        binance.secret = document.getElementById('binancePrivateKey').value;
+        binance.loadMarkets();
+        convertBinanceCoins();
     });
 });
 
 var addLabelAndInput = function (labelText, div, value) {
 
+    var textDiv = document.createElement("div");
     var element = document.createElement("input");
     var label = document.createElement("Label");
-    label.innerHTML = labelText;
 
-    //Assign different attributes to the element.
+    label.innerHTML = labelText;
     element.setAttribute("type", "text");
     element.setAttribute("value", value)
     element.setAttribute("style", "width:150px");
     label.setAttribute("style", "font-weight:normal");
 
-    // 'foobar' is the div id, where new fields are to be added
     var accountDiv = document.getElementById(div);
-
-    //Append the element in page (in span).
-    accountDiv.appendChild(label);
-    accountDiv.appendChild(element);
+    textDiv.appendChild(label);
+    textDiv.appendChild(element);
+    accountDiv.appendChild(textDiv);
 }
 
 var getBtcTurkValues = function () {
@@ -109,6 +115,38 @@ var convertKucoinCoins = function () {
                         (resultObject) => {
                             if (resultObject.value > 0)
                                 addLabelAndInput(resultObject.symbol, "kucoinOutputDiv", resultObject.value);
+                        }
+                    );
+                }
+            }
+        }
+    });
+}
+
+var convertBinanceCoins = function () {
+    binance.fetchBalance().then(response => {
+        debugger;
+        for (var i = 0; i < response.info.balances.length; i++) {
+            var currencyCode = response.info.balances[i].asset;
+            if (response.info.balances[i].free > 0)
+                addLabelAndInput(currencyCode.toUpperCase(), "binanceAccount", response.info.balances[i].free);
+        }
+        for (var i = 0; i < response.info.balances.length; i++) {
+            var currencyCode = response.info.balances[i].asset;
+            if (response.info.balances[i].free != 0 && currencyCode != "USD") {
+                if (currencyCode != "ETH") {
+                    convertEthereumtoBtcturk(binance, currencyCode, response.info.balances[i].free, "binance").then(
+                        (resultObject) => {
+                            if (resultObject.value > 0)
+                                addLabelAndInput(resultObject.symbol, "binanceOutputDiv", resultObject.value);
+                        }
+                    );
+                }
+                if (currencyCode != "BTC") {
+                    convertBitcointoBtcturk(binance, currencyCode, response.info.balances[i].free, "binance").then(
+                        (resultObject) => {
+                            if (resultObject.value > 0)
+                                addLabelAndInput(resultObject.symbol, "binanceOutputDiv", resultObject.value);
                         }
                     );
                 }

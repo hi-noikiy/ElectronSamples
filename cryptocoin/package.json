@@ -1,16 +1,20 @@
 {
   "name": "cryptocoin",
+  "productName": "cryptocoin",
   "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
+  "description": "cryptocoin",
   "scripts": {
-    "start": "electron app.js"
-
+    "start": "electron index"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ccxt": "^1.10.397",
-    "electron": "^1.7.9"
+    "ccxt": "^1.10.1056",
+    "electron-log": "^2.2.14",
+    "jquery": "^3.3.1"
+  },
+  "devDependencies": {
+    "electron": "^1.8.2",
+    "electron-packager": "^11.0.0"
   }
 }

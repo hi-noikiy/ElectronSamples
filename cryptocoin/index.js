@@ -4,7 +4,7 @@ const {
 } = require('electron')
 const path = require('path')
 const url = require('url')
-
+var log = require('electron-log');
 let window = null
 
 // Wait until the app is ready

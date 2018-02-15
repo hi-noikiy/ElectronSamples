@@ -6,6 +6,13 @@ var binance = new ccxt.binance();
 var kucoin = new ccxt.kucoin();
 
 
+const {
+    app
+} = require('electron').remote;
+var log = require('electron-log');
+var rootUserPath = app.getAppPath();
+const path = require('path');
+
 var taxFeeDict = {};
 var btcTurkProps = {};
 
@@ -46,9 +53,9 @@ var addLabelAndInput = function (labelText, div, value) {
     element.setAttribute("style", "width:150px");
     label.setAttribute("style", "font-weight:normal");
 
-    var accountDiv = document.getElementById(div);
     textDiv.appendChild(label);
     textDiv.appendChild(element);
+    var accountDiv = document.getElementById(div);
     accountDiv.appendChild(textDiv);
 }
 
@@ -170,6 +177,7 @@ function convertEthereumtoBtcturk(marketApi, ticker, amount, market) {
                 resolve(resultObject);
             }
         ).catch((error) => {
+            log.error(error);
             reject(error);
         });
     });
@@ -190,16 +198,21 @@ function convertBitcointoBtcturk(marketApi, ticker, amount, market) {
                 resolve(resultObject);
             }
         ).catch((error) => {
+            log.error(error);
             reject(error);
         });
     });
 }
 
 var readTaxFeeList = function () {
-    file.readFileSync('TaxFeeList.txt').toString().split('\n').forEach(
-        function (line) {
-            var keyValuePair = line.split(':');
-            taxFeeDict[keyValuePair[0]] = keyValuePair[1];
-        }
-    )
+    try {
+        file.readFileSync('TaxFeeList.txt').toString().split('\n').forEach(
+            function (line) {
+                var keyValuePair = line.split(':');
+                taxFeeDict[keyValuePair[0]] = keyValuePair[1];
+            }
+        )
+    } catch (error) {
+        log.error(error);
+    }
 }

@@ -5,17 +5,19 @@ var bitfinex = new ccxt.bitfinex();
 var binance = new ccxt.binance();
 var kucoin = new ccxt.kucoin();
 
-
-const {
-    app
-} = require('electron').remote;
 var log = require('electron-log');
-var rootUserPath = app.getAppPath();
-const path = require('path');
+
 
 var taxFeeDict = {};
 var btcTurkProps = {};
-
+var btcTurkTotalValues = {
+    totalBitfinexBtcValue: 0,
+    totalBitfinexEthValue: 0,
+    totalKucoinBtcValue: 0,
+    totalKucoinEthValue: 0,
+    totalBinanceBtcValue: 0,
+    totalBinanceEthValue: 0
+};
 
 $(() => {
     readTaxFeeList();
@@ -71,31 +73,44 @@ var getBtcTurkValues = function () {
 }
 
 var convertBitfinexCoins = function () {
+    var promises = [];
     bitfinex.fetchBalance().then(response => {
-        //coins in the bitfinex balance are added to div
-        for (var i = 0; i < response.info.length; i++) {
-            if (response.info[i].amount > 0)
-                addLabelAndInput(response.info[i].currency.toUpperCase(), "bitfinexAccount", response.info[i].amount);
-        }
-        for (var i = 0; i < response.info.length; i++) {
-            if (response.info[i].amount != 0 && response.info[i].currency != "USD") {
-                var currencyCode = bitfinex.commonCurrencyCode(response.info[i].currency.toUpperCase());
+        response.info.
+        filter(result => result.amount > 0 && result.currencyCode != "USD")
+            .forEach(filteredResult => {
+                addLabelAndInput(filteredResult.currency.toUpperCase(), "bitfinexAccount", filteredResult.amount);
+                var currencyCode = bitfinex.commonCurrencyCode(filteredResult.currency.toUpperCase());
+                if (currencyCode == "ETH") {
+                    btcTurkTotalValues.totalBitfinexEthValue += filteredResult.amount * btcTurkProps.ethereumTry;
+                }
                 if (currencyCode != "ETH") {
-                    convertEthereumtoBtcturk(bitfinex, currencyCode, response.info[i].amount, "bitfinex").then(
+                    promises.push(convertToBtcturk(bitfinex, currencyCode, filteredResult.amount, "bitfinex", "ETH").then(
                         (resultObject) => {
+                            if (resultObject.value > 1) {
+                                btcTurkTotalValues.totalBitfinexEthValue += resultObject.value;
+                            } //under 1 turkish lira will not be seen
                             addLabelAndInput(resultObject.symbol, "bitfinexOutputDiv", resultObject.value);
                         }
-                    );
+                    ));
+                }
+                if (currencyCode == "BTC") {
+                    btcTurkTotalValues.totalBitfinexBtcValue += btcTurkProps.bitcoinTry;
                 }
                 if (currencyCode != "BTC") {
-                    convertBitcointoBtcturk(bitfinex, currencyCode, response.info[i].amount, "bitfinex").then(
+                    promises.push(convertToBtcturk(bitfinex, currencyCode, filteredResult.amount, "bitfinex", "BTC").then(
                         (resultObject) => {
+                            if (resultObject.value > 1) {
+                                btcTurkTotalValues.totalBitfinexBtcValue += resultObject.value;
+                            } //under 1 turkish lira will not be seen
                             addLabelAndInput(resultObject.symbol, "bitfinexOutputDiv", resultObject.value);
                         }
-                    );
+                    ));
                 }
-            }
-        }
+            });
+        Promise.all(promises).then(() => {
+            $('#totalBitfinexBtcValue').text(btcTurkTotalValues.totalBitfinexBtcValue);
+            $('#totalBitfinexEthValue').text(btcTurkTotalValues.totalBitfinexEthValue);
+        });
     });
 }
 
@@ -110,17 +125,17 @@ var convertKucoinCoins = function () {
             var currencyCode = response.info[i].coinType;
             if (response.info[i].balance != 0 && currencyCode != "USD") {
                 if (currencyCode != "ETH") {
-                    convertEthereumtoBtcturk(kucoin, currencyCode, response.info[i].balance, "kucoin").then(
+                    convertToBtcturk(kucoin, currencyCode, response.info[i].balance, "kucoin").then(
                         (resultObject) => {
-                            if (resultObject.value > 0)
+                            if (resultObject.value > 1) //under 1 turkish lira will not be seen
                                 addLabelAndInput(resultObject.symbol, "kucoinOutputDiv", resultObject.value);
                         }
                     );
                 }
                 if (currencyCode != "BTC") {
-                    convertBitcointoBtcturk(kucoin, currencyCode, response.info[i].balance, "kucoin").then(
+                    convertToBtcturk(kucoin, currencyCode, response.info[i].balance, "kucoin").then(
                         (resultObject) => {
-                            if (resultObject.value > 0)
+                            if (resultObject.value > 1) //under 1 turkish lira will not be seen
                                 addLabelAndInput(resultObject.symbol, "kucoinOutputDiv", resultObject.value);
                         }
                     );
@@ -131,69 +146,54 @@ var convertKucoinCoins = function () {
 }
 
 var convertBinanceCoins = function () {
-    binance.fetchBalance().then(response => {
-        debugger;
-        for (var i = 0; i < response.info.balances.length; i++) {
-            var currencyCode = response.info.balances[i].asset;
-            if (response.info.balances[i].free > 0)
-                addLabelAndInput(currencyCode.toUpperCase(), "binanceAccount", response.info.balances[i].free);
-        }
-        for (var i = 0; i < response.info.balances.length; i++) {
-            var currencyCode = response.info.balances[i].asset;
-            if (response.info.balances[i].free != 0 && currencyCode != "USD") {
-                if (currencyCode != "ETH") {
-                    convertEthereumtoBtcturk(binance, currencyCode, response.info.balances[i].free, "binance").then(
-                        (resultObject) => {
-                            if (resultObject.value > 0)
-                                addLabelAndInput(resultObject.symbol, "binanceOutputDiv", resultObject.value);
-                        }
-                    );
-                }
-                if (currencyCode != "BTC") {
-                    convertBitcointoBtcturk(binance, currencyCode, response.info.balances[i].free, "binance").then(
-                        (resultObject) => {
-                            if (resultObject.value > 0)
-                                addLabelAndInput(resultObject.symbol, "binanceOutputDiv", resultObject.value);
-                        }
-                    );
-                }
-            }
-        }
-    });
-}
-
-function convertEthereumtoBtcturk(marketApi, ticker, amount, market) {
     return new Promise((resolve, reject) => {
-        marketApi.fetchTicker(ticker + "/ETH").then(
-            response => {
-                var amountAfterTaxes = amount - taxFeeDict[market + "_eth"];
-                var priceByEth = response.last;
-                var totalCoin = amountAfterTaxes * priceByEth;
-                totalBtcTurkValue = totalCoin * (btcTurkProps.ethereumTry)
-                var resultObject = {
-                    value: totalBtcTurkValue,
-                    symbol: ticker + "/ETH"
-                };
-                resolve(resultObject);
+        binance.fetchBalance().then(response => {
+            for (var i = 0; i < response.info.balances.length; i++) {
+                var currencyCode = response.info.balances[i].asset;
+                if (response.info.balances[i].free > 0)
+                    addLabelAndInput(currencyCode.toUpperCase(), "binanceAccount", response.info.balances[i].free);
             }
-        ).catch((error) => {
-            log.error(error);
-            reject(error);
+            for (var i = 0; i < response.info.balances.length; i++) {
+                var currencyCode = response.info.balances[i].asset;
+                if (response.info.balances[i].free != 0 && currencyCode != "USD") {
+                    if (currencyCode != "ETH") {
+                        convertToBtcturk(binance, currencyCode, response.info.balances[i].free, "binance").then(
+                            (resultObject) => {
+                                if (resultObject.value > 1) //under 1 turkish lira will not be seen
+                                    addLabelAndInput(resultObject.symbol, "binanceOutputDiv", resultObject.value);
+                            }
+                        );
+                    }
+                    if (currencyCode != "BTC") {
+                        convertToBtcturk(binance, currencyCode, response.info.balances[i].free, "binance").then(
+                            (resultObject) => {
+                                if (resultObject.value > 1) //under 1 turkish lira will not be seen
+                                    addLabelAndInput(resultObject.symbol, "binanceOutputDiv", resultObject.value);
+                            }
+                        );
+                    }
+                }
+            }
         });
     });
+
 }
 
-function convertBitcointoBtcturk(marketApi, ticker, amount, market) {
+function convertToBtcturk(marketApi, ticker, amount, market, convertTo) {
     return new Promise((resolve, reject) => {
-        marketApi.fetchTicker(ticker + "/BTC").then(
+        debugger;
+        marketApi.fetchTicker(ticker + "/" + convertTo).then(
             response => {
-                var amountAfterTaxes = amount - taxFeeDict[market + "_btc"];
-                var priceByBtc = response.last;
-                var totalCoin = amountAfterTaxes * priceByBtc;
-                totalBtcTurkValue = totalCoin * (btcTurkProps.bitcoinTry);
+                var amountAfterTaxes = amount - taxFeeDict[market + "_" + convertTo];
+                var price = response.last;
+                var totalCoin = amountAfterTaxes * price;
+                if (convertTo == "ETH")
+                    totalBtcTurkValue = totalCoin * (btcTurkProps.ethereumTry)
+                if (convertTo == "BTC")
+                    totalBtcTurkValue = totalCoin * (btcTurkProps.bitcoinTry)
                 var resultObject = {
                     value: totalBtcTurkValue,
-                    symbol: ticker + "/BTC"
+                    symbol: ticker + "/" + convertTo
                 };
                 resolve(resultObject);
             }

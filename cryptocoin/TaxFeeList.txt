@@ -1,5 +1,5 @@
-bitfinex_eth:0.0027
-bitfinex_btc:0.0008
+bitfinex_ETH:0.0027
+bitfinex_BTC:0.0008
 kucoin_eth:0.01
 kucoin_btc:0.001
 binance_eth:0.01

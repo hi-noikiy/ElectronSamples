@@ -181,7 +181,6 @@ var convertBinanceCoins = function () {
 
 function convertToBtcturk(marketApi, ticker, amount, market, convertTo) {
     return new Promise((resolve, reject) => {
-        debugger;
         marketApi.fetchTicker(ticker + "/" + convertTo).then(
             response => {
                 var amountAfterTaxes = amount - taxFeeDict[market + "_" + convertTo];
